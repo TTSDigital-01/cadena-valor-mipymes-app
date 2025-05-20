@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 // Este es el layout principal de tu aplicación Next.js.
 // Define la estructura HTML básica y envuelve la aplicación con proveedores globales.
+// Formateado para evitar errores de hidratación por espacios en blanco.
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Importa la fuente Inter (si la usas)
@@ -24,6 +25,8 @@ export default function RootLayout({
 }>) {
   return (
     // Estructura HTML básica con la etiqueta <html> y <body>
+    // ¡Importante! Asegúrate de que no haya espacios en blanco o nuevas líneas
+    // directamente entre las etiquetas <html> y <body>, y </body> y </html>
     <html lang="es"> {/* Define el idioma de la página */}
       {/* Aplica la clase de la fuente Inter al body */}
       <body className={inter.className}>
