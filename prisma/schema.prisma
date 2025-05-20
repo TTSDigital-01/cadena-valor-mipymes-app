@@ -1,5 +1,8 @@
 // prisma/schema.prisma
 
+// Este es tu archivo de esquema de Prisma.
+// Aprende más sobre ello en la documentación: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,13 +15,24 @@ datasource db {
 // ============== MODELOS DE LA APLICACIÓN ==================
 
 model User {
-  id           String       @id @default(cuid()) // Identificador único para el usuario (generado automáticamente)
-  email        String       @unique // Correo electrónico del usuario, debe ser único para el login
-  passwordHash String       // Contraseña encriptada para seguridad
-  role         String       @default("MIPYME_USER") // Rol del usuario (ej. "MIPYME_USER", "ADMIN", "ADVISOR")
-  name         String?      // Nombre opcional del usuario
+  id            String         @id @default(cuid()) // Identificador único para el usuario (generado automáticamente)
+  email         String         @unique // Correo electrónico del usuario, debe ser único para el login
+  passwordHash  String         // Contraseña encriptada (campo que usaremos para el login manual)
+  role          String         @default("MIPYME_USER") // Rol del usuario (ej. "MIPYME_USER", "ADMIN", "ADVISOR")
 
+  name          String?        // Nombre opcional del usuario
+
+  // Campos adicionales que NextAuth.js podría usar si configuras proveedores OAuth
+  // Si no vas a usar proveedores OAuth (Google, Facebook, etc.) y solo usas login/registro con email y contraseña,
+  // puedes mantener estos campos comentados o eliminarlos para simplificar.
+  // Pero si en el futuro los usas, NextAuth.js los buscará.
+  emailVerified DateTime?
+  image         String?
+
+  // Relaciones con otros modelos
   organizations Organization[] // Un usuario puede tener múltiples organizaciones asociadas
+  accounts      Account[]      // Relación con el modelo Account de NextAuth.js (para proveedores OAuth)
+  sessions      Session[]      // Relación con el modelo Session de NextAuth.js (para el manejo de sesiones)
 }
 
 model Organization {
@@ -35,8 +49,58 @@ model Organization {
   createdAt        DateTime       @default(now()) // Fecha de creación del registro
   updatedAt        DateTime       @updatedAt      // Fecha de la última actualización del registro
 
-  
+  // --------------- Relaciones futuras para la metodología (se irán construyendo) ---------------
+  // Estos campos están comentados TEMPORALMENTE para que la migración inicial funcione.
+  // Los descomentaremos y definiremos sus respectivos modelos en fases posteriores.
+  // chainValueActivities ChainValueActivity[]
+  // analysesFoda         AnalysisFoda[]
+  // analysesPestel       AnalysisPestel[]
+  // strategies           Strategy[]
+  // strategicObjectives  StrategicObjective[]
 
-  @@map("organizations") // Nombre de la tabla en la base de datos será 'organizations'
+  @@map("organizations") // Nombre de la tabla en la base de datos será 'organizations' (minúsculas y plural)
 }
 
+
+// ============== MODELOS DE NEXTAUTH.JS ==================
+// Estos modelos son necesarios para que NextAuth.js maneje la autenticación y las sesiones
+// utilizando Prisma como su base de datos. No los modifiques a menos que se indique explícitamente.
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
