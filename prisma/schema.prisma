@@ -1,0 +1,42 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============== MODELOS DE LA APLICACIÓN ==================
+
+model User {
+  id           String       @id @default(cuid()) // Identificador único para el usuario (generado automáticamente)
+  email        String       @unique // Correo electrónico del usuario, debe ser único para el login
+  passwordHash String       // Contraseña encriptada para seguridad
+  role         String       @default("MIPYME_USER") // Rol del usuario (ej. "MIPYME_USER", "ADMIN", "ADVISOR")
+  name         String?      // Nombre opcional del usuario
+
+  organizations Organization[] // Un usuario puede tener múltiples organizaciones asociadas
+}
+
+model Organization {
+  id               String         @id @default(cuid()) // Identificador único para la organización (generado automáticamente)
+  userId           String         // ID del usuario al que pertenece esta organización (foreign key)
+  user             User           @relation(fields: [userId], references: [id]) // Relación con el modelo User
+
+  name             String         // Nombre de la Mipyme
+  sector           String?        // Sector de la Mipyme (opcional)
+  productsServices String?        @map("products_services") // Productos/Servicios ofrecidos (se mapea a 'products_services' en la DB)
+  mission          String?        // Misión actual de la Mipyme (opcional)
+  vision           String?        // Visión actual de la Mipyme (opcional)
+
+  createdAt        DateTime       @default(now()) // Fecha de creación del registro
+  updatedAt        DateTime       @updatedAt      // Fecha de la última actualización del registro
+
+  
+
+  @@map("organizations") // Nombre de la tabla en la base de datos será 'organizations'
+}
+
