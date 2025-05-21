@@ -1,23 +1,24 @@
 // src/app/providers.tsx
 // Este componente envuelve la aplicación para proporcionar el contexto de sesión de NextAuth.js.
 
-'use client'; // Indica que este es un componente de cliente que se ejecuta en el navegador.
+'use client';
 
-import { SessionProvider } from 'next-auth/react'; // Importa el SessionProvider de NextAuth.js
-import React from 'react'; // Importa React
+import { SessionProvider } from 'next-auth/react';
+import React from 'react';
+import { Session } from 'next-auth'; // Importa el tipo Session
 
-// Define la interfaz para las props del componente (los hijos que va a envolver)
+// Define la interfaz para las props del componente, ahora incluyendo 'session'
 interface Props {
-  children: React.ReactNode; // 'children' es el contenido que se renderizará dentro del proveedor
+  children: React.ReactNode;
+  session: Session | null; // La sesión puede ser Session o null
 }
 
 // Componente AuthProvider que envuelve a los hijos con SessionProvider
-export default function AuthProvider({ children }: Props) {
+export default function AuthProvider({ children, session }: Props) {
   return (
-    // SessionProvider proporciona el contexto de sesión a todos los componentes anidados.
-    // Los hooks de NextAuth.js (como useSession, signIn, signOut) se usarán dentro de los 'children'.
-    <SessionProvider>
-      {children} {/* Renderiza los componentes hijos */}
+    // Pasamos la prop 'session' al SessionProvider
+    <SessionProvider session={session}>
+      {children}
     </SessionProvider>
   );
 }

@@ -2,7 +2,7 @@
 // Esta API Route maneja las solicitudes de registro de nuevos usuarios.
 
 import { NextResponse } from 'next/server'; // Para enviar respuestas HTTP
-import prisma from '@/lib/prisma'; // Importamos la instancia de Prisma Client
+import { prisma } from '@/lib/prisma'; 
 import bcrypt from 'bcryptjs'; // Para encriptar contraseñas
 
 // Función asíncrona que maneja las solicitudes POST a /api/register
